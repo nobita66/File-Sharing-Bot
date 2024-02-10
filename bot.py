@@ -1,8 +1,10 @@
+
+
 from aiohttp import web
 import random
 import string
 from datetime import datetime, timedelta
-
+import requests
 import pyromod.listen
 from pyrogram import Client
 from pyrogram.enums import ParseMode
@@ -17,9 +19,25 @@ def generate_verification_token(length=6):
 # Store verification tokens and their expiration times
 verification_tokens = {}
 
-# Function to check if a token is valid and not expired
+# Function to check if a token is valid and not expired using publicearn API
 def is_valid_token(token):
-    return token in verification_tokens and verification_tokens[token] > datetime.now()
+    url = 'https://publicearn.com/api/verify_token'
+    headers = {
+        'Authorization': f'85d2cf5838d6c742c6a855eb514af076ea5c3790',
+        'Content-Type': 'application/json'
+    }
+    data = {
+        'token': token
+    }
+    try:
+        response = requests.post(url, headers=headers, json=data)
+        if response.status_code == 200:
+            return True
+        else:
+            return False
+    except Exception as e:
+        # Handle exception (e.g., log error, return False)
+        return False
 
 class Bot(Client):
     def __init__(self):
@@ -62,21 +80,15 @@ class Bot(Client):
         except Exception as e:
             self.LOGGER(__name__).warning(e)
             self.LOGGER(__name__).warning(f"Make Sure bot is Admin in DB Channel, and Double check the CHANNEL_ID Value, Current Value {CHANNEL_ID}")
-            self.LOGGER(__name__).info("\nBot Stopped. Join https://t.me/CodeXBotzSupport for support")
+            self.LOGGER(__name__).info("\nBot Stopped. Join for support")
             sys.exit()
-
+        
+			
         self.set_parse_mode(ParseMode.HTML)
         self.LOGGER(__name__).info(f"Bot Running..!\n\nCreated by \nhttps://t.me/CodeXBotz")
-        self.LOGGER(__name__).info(f""" \n\n       
-░█████╗░░█████╗░██████╗░███████╗██╗░░██╗██████╗░░█████╗░████████╗███████╗
-██╔══██╗██╔══██╗██╔══██╗██╔════╝╚██╗██╔╝██╔══██╗██╔══██╗╚══██╔══╝╚════██║
-██║░░╚═╝██║░░██║██║░░██║█████╗░░░╚███╔╝░██████╦╝██║░░██║░░░██║░░░░░███╔═╝
-██║░░██╗██║░░██║██║░░██║██╔══╝░░░██╔██╗░██╔══██╗██║░░██║░░░██║░░░██╔══╝░░
-╚█████╔╝╚█████╔╝██████╔╝███████╗██╔╝╚██╗██████╦╝╚█████╔╝░░░██║░░░███████╗
-░╚════╝░░╚════╝░╚═════╝░╚══════╝╚═╝░░╚═╝╚═════╝░░╚════╝░░░░╚═╝░░░╚══════╝
-                                          """)
         self.username = usr_bot_me.username
-        #web-response
+        
+        # Start web server
         app = web.Application()
         app.router.add_routes([web.get('/', self.handle_verification)])
         app.router.add_routes([web.post('/', self.handle_message)])
