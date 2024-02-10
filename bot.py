@@ -1,15 +1,25 @@
-#(©)Codexbotz
-
 from aiohttp import web
-from plugins import web_server
+import random
+import string
+from datetime import datetime, timedelta
 
 import pyromod.listen
 from pyrogram import Client
 from pyrogram.enums import ParseMode
 import sys
-from datetime import datetime
 
 from config import API_HASH, APP_ID, LOGGER, TG_BOT_TOKEN, TG_BOT_WORKERS, FORCE_SUB_CHANNEL, CHANNEL_ID, PORT
+
+# Generate a random verification token
+def generate_verification_token(length=6):
+    return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(length))
+
+# Store verification tokens and their expiration times
+verification_tokens = {}
+
+# Function to check if a token is valid and not expired
+def is_valid_token(token):
+    return token in verification_tokens and verification_tokens[token] > datetime.now()
 
 class Bot(Client):
     def __init__(self):
@@ -24,6 +34,7 @@ class Bot(Client):
             bot_token=TG_BOT_TOKEN
         )
         self.LOGGER = LOGGER
+        self.verification_token = None
 
     async def start(self):
         await super().start()
@@ -66,11 +77,36 @@ class Bot(Client):
                                           """)
         self.username = usr_bot_me.username
         #web-response
-        app = web.AppRunner(await web_server())
-        await app.setup()
-        bind_address = "0.0.0.0"
-        await web.TCPSite(app, bind_address, PORT).start()
+        app = web.Application()
+        app.router.add_routes([web.get('/', self.handle_verification)])
+        app.router.add_routes([web.post('/', self.handle_message)])
+        runner = web.AppRunner(app)
+        await runner.setup()
+        site = web.TCPSite(runner, '0.0.0.0', PORT)
+        await site.start()
+
+    async def handle_verification(self, request):
+        if not self.verification_token or not is_valid_token(self.verification_token):
+            self.verification_token = generate_verification_token()
+            verification_tokens[self.verification_token] = datetime.now() + timedelta(hours=24)
+            return web.Response(text=f"Here's your verification token: {self.verification_token}\n\nThis token will expire in 24 hours.")
+        return web.Response(text="You are already verified.")
+
+    async def handle_message(self, request):
+        if not await self.verify_access(request):
+            return web.Response(text="Please verify your access by providing the verification token.")
+        # Process the message
+        # ...
+
+    async def verify_access(self, request):
+        token = request.query.get('token')
+        return token and is_valid_token(token)
 
     async def stop(self, *args):
         await super().stop()
         self.LOGGER(__name__).info("Bot stopped.")
+
+# Run the bot
+if __name__ == "__main__":
+    bot = Bot()
+    bot.run()
