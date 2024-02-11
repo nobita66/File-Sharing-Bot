@@ -7,6 +7,7 @@ from pyrogram.errors import FloodWait
 from bot import Bot
 from config import ADMINS, CHANNEL_ID, DISABLE_CHANNEL_BUTTON
 from helper_func import encode
+import requests
 
 @Bot.on_message(filters.private & filters.user(ADMINS) & ~filters.command(['start','users','broadcast','batch','genlink','stats']))
 async def channel_post(client: Client, message: Message):
@@ -31,7 +32,28 @@ async def channel_post(client: Client, message: Message):
     format_type = "text"
     second_link = f"https://publicearn.com/api?api={api_key}&url={destination_link}&alias={custom_alias}"
 
-    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={second_link}')]])
+ 
+
+api_key = "85d2cf5838d6c742c6a855eb514af076ea5c3790"
+destination_link = link  # Assuming 'link' contains the previously generated URL
+custom_alias = "CustomAlias"
+
+url = "https://publicearn.com/api"
+payload = {
+    "api": api_key,
+    "url": destination_link,
+    "alias": custom_alias
+}
+
+response = requests.post(url, data=payload)
+if response.status_code == 200:
+    short_link = response.text
+    print(f"Shortened URL: {short_link}")
+else:
+    print(f"Failed to shorten URL. Status code: {response.status_code}")
+
+
+    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={short_link}')]])
 
     await reply_text.edit(f"<b>Here is your link</b>\n\n{second_link}", reply_markup=reply_markup, disable_web_page_preview = True)
 
@@ -48,7 +70,7 @@ async def new_post(client: Client, message: Message):
     string = f"get-{converted_id}"
     base64_string = await encode(string)
     link = f"https://t.me/{client.username}?start={base64_string}"
-    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={second_link}')]])
+    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={short_link}')]])
     try:
         await message.edit_reply_markup(reply_markup)
     except Exception as e:
