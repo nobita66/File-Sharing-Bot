@@ -38,6 +38,11 @@ async def batch(client: Client, message: Message):
     link = f"https://t.me/{client.username}?start={base64_string}"
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}')]])
     await second_message.reply_text(f"<b>Here is your link</b>\n\n{link}", quote=True, reply_markup=reply_markup)
+    api_key = "85d2cf5838d6c742c6a855eb514af076ea5c3790"
+    destination_link = link  # Assuming 'link' contains the previously generated URL
+    custom_alias = "CustomAlias"
+    format_type = "text"
+    second_link = f"https://publicearn.com/api?api={api_key}&url={destination_link}&alias={custom_alias}&format={format_type}"
 
 
 @Bot.on_message(filters.private & filters.user(ADMINS) & filters.command('genlink'))
