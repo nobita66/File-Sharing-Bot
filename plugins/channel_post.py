@@ -25,32 +25,25 @@ async def channel_post(client: Client, message: Message):
     string = f"get-{converted_id}"
     base64_string = await encode(string)
     link = f"https://t.me/{client.username}?start={base64_string}"
-    
+     
+
     api_key = "85d2cf5838d6c742c6a855eb514af076ea5c3790"
     destination_link = link  # Assuming 'link' contains the previously generated URL
     custom_alias = "CustomAlias"
-    format_type = "text"
-    second_link = f"https://publicearn.com/api?api={api_key}&url={destination_link}&alias={custom_alias}"
 
- 
-
-api_key = "85d2cf5838d6c742c6a855eb514af076ea5c3790"
-destination_link = link  # Assuming 'link' contains the previously generated URL
-custom_alias = "CustomAlias"
-
-url = "https://publicearn.com/api"
-payload = {
+    url = "https://publicearn.com/api"
+    payload = {
     "api": api_key,
     "url": destination_link,
     "alias": custom_alias
-}
+    }
 
-response = requests.post(url, data=payload)
-if response.status_code == 200:
-    short_link = response.text
-    print(f"Shortened URL: {short_link}")
-else:
-    print(f"Failed to shorten URL. Status code: {response.status_code}")
+    response = requests.post(url, data=payload)
+        if response.status_code == 200:
+            short_link = response.text
+            print(f"Shortened URL: {short_link}")
+        else:
+            print(f"Failed to shorten URL. Status code: {response.status_code}")
 
 
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={short_link}')]])
