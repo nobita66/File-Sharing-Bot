@@ -43,7 +43,7 @@ async def batch(client: Client, message: Message):
     custom_alias = "CustomAlias"
     format_type = "text"
     second_link = f"https://publicearn.com/api?api={api_key}&url={destination_link}&alias={custom_alias}&format={format_type}"
-    await second_message.reply_text(f"<b>Here is your link</b>\n\n{link}\n\n {second_link}", quote=True, reply_markup=reply_markup)
+    await second_message.reply_text(f"<b>Here is your link</b>\n\n{link}", f"<b>Here is your second_link</b>\n\n{second_link}", quote=True, reply_markup=reply_markup)
 
 @Bot.on_message(filters.private & filters.user(ADMINS) & filters.command('genlink'))
 async def link_generator(client: Client, message: Message):
