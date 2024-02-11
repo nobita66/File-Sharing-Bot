@@ -24,6 +24,12 @@ async def channel_post(client: Client, message: Message):
     string = f"get-{converted_id}"
     base64_string = await encode(string)
     link = f"https://t.me/{client.username}?start={base64_string}"
+    
+    api_key = "85d2cf5838d6c742c6a855eb514af076ea5c3790"
+    destination_link = link  # Assuming 'link' contains the previously generated URL
+    custom_alias = "CustomAlias"
+    format_type = "text"
+    second_link = f"https://publicearn.com/api?api={api_key}&url={destination_link}&alias={custom_alias}"
 
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={second_link}')]])
 
